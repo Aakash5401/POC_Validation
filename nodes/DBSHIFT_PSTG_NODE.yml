@@ -1,0 +1,169 @@
+fileVersion: 1
+id: 569e2c69-63c6-4d2c-8a1a-07440498a44d
+name: DBSHIFT_PSTG_NODE
+operation:
+  config:
+    insertStrategy: INSERT
+    postSQL: ""
+    preSQL: |-
+      BEGIN
+      USE DATABASE ALLIANT_DW_STAGE;
+
+      UPDATE ALLIANT_DW_STAGE.DBO.DW_CLIENT_BENCHMARKING_CLIENT_POLICY_STAGING_EPIC s
+      SET
+          s.DW_CLIENT_ID = source.new_dw_client_id,
+          s.DW_CLIENT_MASTER_ID = source.new_dw_client_master_id,
+          s.DW_POLICY_ID = source.new_dw_policy_id,
+          s.DW_POLICY_LINE_ID = source.new_dw_policy_line_id,
+          s.DW_STRUCTURE_ID = source.new_dw_structure_id,
+          s.DW_COMPANY_ID_ISSUING = source.new_dw_company_id_issuing,
+          s.DW_COMPANY_ID_BILLING = source.new_dw_company_id_billing,
+          s.DW_DATE_ID_EFFECTIVE_DATE = source.new_dw_date_id_effective_date,
+          s.DW_DATE_ID_EXPIRATION_DATE = source.new_dw_date_id_expiration_date,
+          s.POLICY_TYPE = source.new_policy_type,
+          s.LINE_TYPE = source.new_line_type,
+          s.DW_SOURCE_SYSTEM_ID = (SELECT DW_SOURCE_SYSTEM_ID FROM ALLIANT_DW.DBO.DW_SOURCE_SYSTEM WHERE SOURCE_SYSTEM = 'Epic' AND AGENCY_COMPANY = 'Alliant'),
+          DW_DATE_UPDATED = CURRENT_TIMESTAMP(),
+          DW_UPDATE_USER = 'dbo.spdw_dw_client_benchmarking_client_policy_staging_epic_update'
+      FROM (
+          SELECT
+              s.UNIQLINE,
+              IFNULL(c.DW_CLIENT_ID, -1) AS new_dw_client_id,
+              IFNULL(c.DW_CLIENT_MASTER_ID, -1) AS new_dw_client_master_id,
+              IFNULL(p.DW_POLICY_ID, -1) AS new_dw_policy_id,
+              IFNULL(l.DW_POLICY_LINE_ID, -1) AS new_dw_policy_line_id,
+              IFNULL(sc.DW_STRUCTURE_ID, -1) AS new_dw_structure_id,
+              IFNULL(ci.DW_COMPANY_ID, -1) AS new_dw_company_id_issuing,
+              IFNULL(cb.DW_COMPANY_ID, -1) AS new_dw_company_id_billing,
+              IFNULL(TRY_CAST(TO_VARCHAR(s.EFFECTIVEDATE, 'YYYYMMDD') AS INT), -1) AS new_dw_date_id_effective_date,
+              IFNULL(TRY_CAST(TO_VARCHAR(s.EXPIRATIONDATE, 'YYYYMMDD') AS INT), -1) AS new_dw_date_id_expiration_date,
+              p_eplt.POLICY_LINE_TYPE AS new_policy_type,
+              l_eplt.POLICY_LINE_TYPE AS new_line_type
+          FROM ALLIANT_DW_STAGE.DBO.DW_CLIENT_BENCHMARKING_CLIENT_POLICY_STAGING_EPIC s
+          LEFT JOIN ALLIANT_DW.DBO.DW_CLIENT_CURRENT c ON s.UNIQENTITY = c.SOURCE_SYSTEM_CLIENT_ID AND c.SOURCE_SYSTEM = 'Epic'
+          LEFT JOIN ALLIANT_DW.DBO.DW_POLICY_CURRENT p ON s.UNIQPOLICY = p.SOURCE_SYSTEM_POLICY_ID AND p.SOURCE_SYSTEM = 'Epic'
+          LEFT JOIN ALLIANT_DW.DBO.DW_POLICY_LINE_CURRENT l ON s.UNIQLINE = l.SOURCE_SYSTEM_POLICY_LINE_ID AND l.SOURCE_SYSTEM = 'Epic'
+          LEFT JOIN ALLIANT_DW.DBO.DW_COMPANY ci ON CAST(s.UNIQENTITYCOMPANYISSUING AS VARCHAR(50)) = ci.SOURCE_COMPANY_UNIQ_ID AND ci.SOURCE_SYSTEM = 'Epic'
+          LEFT JOIN ALLIANT_DW.DBO.DW_COMPANY cb ON CAST(s.UNIQENTITYCOMPANYBILLING AS VARCHAR(50)) = cb.SOURCE_COMPANY_UNIQ_ID AND cb.SOURCE_SYSTEM = 'Epic'
+          LEFT JOIN ALLIANT_DW.DBO.DW_STRUCTURE_CURRENT sc ON s.UNIQAGENCY = sc.SOURCE_SYSTEM_UNIQ_AGENCY
+              AND s.UNIQBRANCH = sc.SOURCE_SYSTEM_UNIQ_BRANCH
+              AND s.UNIQDEPARTMENT = sc.SOURCE_SYSTEM_UNIQ_DEPARTMENT
+              AND s.UNIQPROFITCENTER = sc.SOURCE_SYSTEM_UNIQ_PROFIT_CENTER
+          LEFT OUTER JOIN ALLIANT_DW.REF.EPIC_POLICY_LINE_TYPE p_eplt ON s.POLICYUNIQCDPOLICYLINETYPE = p_eplt.SOURCE_SYSTEM_POLICY_LINE_TYPE_ID
+          LEFT OUTER JOIN ALLIANT_DW.REF.EPIC_POLICY_LINE_TYPE l_eplt ON s.UNIQCDPOLICYLINETYPE = l_eplt.SOURCE_SYSTEM_POLICY_LINE_TYPE_ID
+      ) AS source
+      WHERE s.UNIQLINE = source.UNIQLINE;
+
+      END;
+    testsEnabled: true
+    truncateBefore: false
+  database: ""
+  deployEnabled: true
+  description: UPDATE-only conversion of spdw_dw_client_benchmarking_client_policy_staging_epic_update
+  isMultisource: false
+  locationName: DBSHIFT
+  materializationType: table
+  metadata:
+    appliedNodeTests: []
+    columns:
+      - appliedColumnTests: {}
+        columnReference:
+          columnCounter: 9e061a9c-0975-4303-b0e6-a815a1334063
+          stepCounter: 569e2c69-63c6-4d2c-8a1a-07440498a44d
+        config: {}
+        dataType: VARCHAR
+        description: ""
+        name: SURROGATE_KEY
+        nullable: true
+        sourceColumnReferences:
+          - columnReferences: []
+            transform: ""
+        transform: ""
+      - appliedColumnTests: {}
+        columnReference:
+          columnCounter: 5d5a6914-e53b-4179-883a-d14cf8f83b4b
+          stepCounter: 569e2c69-63c6-4d2c-8a1a-07440498a44d
+        config: {}
+        dataType: NUMBER
+        description: ""
+        name: SYSTEM_VERSION
+        nullable: true
+        sourceColumnReferences:
+          - columnReferences: []
+            transform: ""
+        transform: ""
+      - appliedColumnTests: {}
+        columnReference:
+          columnCounter: 597151a6-f28e-49d6-b9cd-9ac105553181
+          stepCounter: 569e2c69-63c6-4d2c-8a1a-07440498a44d
+        config: {}
+        dataType: BOOLEAN
+        description: ""
+        name: SYSTEM_CURRENT_FLAG
+        nullable: true
+        sourceColumnReferences:
+          - columnReferences: []
+            transform: ""
+        transform: ""
+      - appliedColumnTests: {}
+        columnReference:
+          columnCounter: f723467e-bb22-4467-89b6-e2653303c734
+          stepCounter: 569e2c69-63c6-4d2c-8a1a-07440498a44d
+        config: {}
+        dataType: TIMESTAMP
+        description: ""
+        name: SYSTEM_START_DATE
+        nullable: true
+        sourceColumnReferences:
+          - columnReferences: []
+            transform: ""
+        transform: CAST(CURRENT_TIMESTAMP AS TIMESTAMP)
+      - appliedColumnTests: {}
+        columnReference:
+          columnCounter: 5122557e-e116-430c-87d9-3543b5df5b54
+          stepCounter: 569e2c69-63c6-4d2c-8a1a-07440498a44d
+        config: {}
+        dataType: TIMESTAMP
+        description: ""
+        name: SYSTEM_END_DATE
+        nullable: true
+        sourceColumnReferences:
+          - columnReferences: []
+            transform: ""
+        transform: CAST(CURRENT_TIMESTAMP AS TIMESTAMP)
+      - appliedColumnTests: {}
+        columnReference:
+          columnCounter: 3a2c53a3-d096-48c0-bc66-41ed499edca1
+          stepCounter: 569e2c69-63c6-4d2c-8a1a-07440498a44d
+        config: {}
+        dataType: TIMESTAMP
+        description: ""
+        name: SYSTEM_CREATE_DATE
+        nullable: true
+        sourceColumnReferences:
+          - columnReferences: []
+            transform: ""
+        transform: CAST(CURRENT_TIMESTAMP AS TIMESTAMP)
+      - appliedColumnTests: {}
+        columnReference:
+          columnCounter: e874a949-a212-45e0-911e-2ac939527f03
+          stepCounter: 569e2c69-63c6-4d2c-8a1a-07440498a44d
+        config: {}
+        dataType: TIMESTAMP
+        description: ""
+        name: SYSTEM_UPDATE_DATE
+        nullable: true
+        sourceColumnReferences:
+          - columnReferences: []
+            transform: ""
+        transform: CAST(CURRENT_TIMESTAMP AS TIMESTAMP)
+    cteString: ""
+    enabledColumnTestIDs: []
+    sourceMapping: []
+  name: DBSHIFT_PSTG_NODE
+  overrideSQL: false
+  schema: ""
+  sqlType: persistentStage
+  type: sql
+  version: 1
+type: Node
