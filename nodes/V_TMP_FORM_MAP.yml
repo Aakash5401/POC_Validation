@@ -76,8 +76,7 @@ operation:
         nullable: true
         sourceColumnReferences:
           - columnReferences: []
-            transform: /* SNOWFLAKE-CONVERSION-CHALLENGE: T-SQL parent axis ('../../@PageDesc')
-              not supported in XMLGET. Requires multi-level flatten or UDF. */ NULL
+            transform: NULL
         transform: ""
       - appliedColumnTests: {}
         columnReference:
@@ -117,3 +116,4 @@ operation:
   version: 1
 
 type: Node
+
