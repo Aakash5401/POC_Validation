@@ -63,7 +63,7 @@ operation:
         nullable: true
         sourceColumnReferences:
           - columnReferences: []
-            transform: NULL
+            transform: ""
         transform: ""
       - appliedColumnTests: {}
         columnReference:
@@ -76,7 +76,7 @@ operation:
         nullable: true
         sourceColumnReferences:
           - columnReferences: []
-            transform: NULL
+            transform: ""
         transform: ""
       - appliedColumnTests: {}
         columnReference:
@@ -116,4 +116,5 @@ operation:
   version: 1
 
 type: Node
+
 
